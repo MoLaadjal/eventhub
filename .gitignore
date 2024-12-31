@@ -7,3 +7,7 @@
 
 # Docker
 docker/**/data/
+
+# Dependencies
+**/node_modules/
+**/dist/
