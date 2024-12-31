@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: eventhub
+      POSTGRES_PASSWORD: eventhub123
+      POSTGRES_DB: eventhub
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - eventhub-network
+
+networks:
+  eventhub-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
