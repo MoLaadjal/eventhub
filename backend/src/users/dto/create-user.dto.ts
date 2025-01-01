@@ -18,11 +18,13 @@ export class CreateUserDto {
   @IsString({ message: 'Le prénom doit être une chaîne de caractères' })
   @MinLength(2, { message: 'Le prénom doit contenir au moins 2 caractères' })
   @MaxLength(50, { message: 'Le prénom ne peut pas dépasser 50 caractères' })
+  @Transform(({ value }: TransformFnParams) => value?.trim())
   firstName: string;
 
   @IsString({ message: 'Le nom doit être une chaîne de caractères' })
   @MinLength(2, { message: 'Le nom doit contenir au moins 2 caractères' })
   @MaxLength(50, { message: 'Le nom ne peut pas dépasser 50 caractères' })
+  @Transform(({ value }: TransformFnParams) => value?.trim())
   lastName: string;
 
   @IsString({ message: 'Le mot de passe doit être une chaîne de caractères' })
