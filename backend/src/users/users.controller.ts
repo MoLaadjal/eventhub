@@ -18,6 +18,8 @@ import { Role } from 'src/auth/enums/role.enum';
 import { RequirePermissions } from 'src/auth/decorators/permissions.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Permission } from 'src/auth/enums/permission.enum';
+import { ConflictException } from '@nestjs/common';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
@@ -27,6 +29,20 @@ export class UsersController {
   @Post() // Route d'inscription non protégée
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
+  }
+
+  @Post('init-admin')
+  @Public()
+  async createInitialAdmin(@Body() createUserDto: CreateUserDto) {
+    const adminExists = await this.usersService.hasAdmin();
+    if (adminExists) {
+      throw new ConflictException('Un administrateur existe déjà');
+    }
+
+    return this.usersService.create({
+      ...createUserDto,
+      roles: [Role.ADMIN],
+    });
   }
 
   @UseGuards(JwtAuthGuard) // Protection uniquement pour les routes GET, PATCH, DELETE

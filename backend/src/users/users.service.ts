@@ -9,6 +9,7 @@ import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { Like } from 'typeorm';
 
 @Injectable()
 export class UsersService {
@@ -16,6 +17,15 @@ export class UsersService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
   ) {}
+
+  async hasAdmin(): Promise<boolean> {
+    const admin = await this.usersRepository.findOne({
+      where: {
+        roles: Like('%admin%'),
+      },
+    });
+    return !!admin;
+  }
   async create(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.usersRepository.findOne({
       where: { email: createUserDto.email },
