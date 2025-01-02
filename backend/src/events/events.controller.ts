@@ -57,4 +57,22 @@ export class EventsController {
   remove(@Param('id') id: string) {
     return this.eventsService.remove(id);
   }
+
+  @Post(':id/participate')
+  @Roles(Role.PARTICIPANT)
+  async participate(@Param('id') id: string, @Request() req) {
+    return this.eventsService.addParticipant(id, req.user.id);
+  }
+
+  @Delete(':id/participate')
+  @Roles(Role.PARTICIPANT)
+  async cancelParticipation(@Param('id') id: string, @Request() req) {
+    return this.eventsService.removeParticipant(id, req.user.id);
+  }
+
+  @Get(':id/participants')
+  @Roles(Role.ADMIN, Role.ORGANIZER)
+  async getParticipants(@Param('id') id: string) {
+    return this.eventsService.getEventParticipants(id);
+  }
 }
