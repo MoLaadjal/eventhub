@@ -19,6 +19,7 @@ import { Permission } from 'src/auth/enums/permission.enum';
 import { Role } from 'src/auth/enums/role.enum';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { EventStatus } from './enums/event-status.enum';
 
 @Controller('events')
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
@@ -51,10 +52,39 @@ export class EventsController {
     return this.eventsService.update(id, updateEventDto);
   }
 
+  @Patch(':id/status')
+  @Roles(Role.ADMIN, Role.ORGANIZER)
+  @RequirePermissions(Permission.UPDATE_EVENTS)
+  async updateStatus(
+    @Param('id') id: string,
+    @Body('status') status: EventStatus,
+    @Request() req,
+  ) {
+    return this.eventsService.updateStatus(id, status, req.user.id);
+  }
+
   @Delete(':id')
   @Roles(Role.ADMIN)
   @RequirePermissions(Permission.DELETE_EVENTS)
   remove(@Param('id') id: string) {
     return this.eventsService.remove(id);
+  }
+
+  @Post(':id/participate')
+  @Roles(Role.PARTICIPANT)
+  async participate(@Param('id') id: string, @Request() req) {
+    return this.eventsService.addParticipant(id, req.user.id);
+  }
+
+  @Delete(':id/participate')
+  @Roles(Role.PARTICIPANT)
+  async cancelParticipation(@Param('id') id: string, @Request() req) {
+    return this.eventsService.removeParticipant(id, req.user.id);
+  }
+
+  @Get(':id/participants')
+  @Roles(Role.ADMIN, Role.ORGANIZER)
+  async getParticipants(@Param('id') id: string) {
+    return this.eventsService.getEventParticipants(id);
   }
 }
