@@ -1,7 +1,9 @@
 // src/events/events.service.ts
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,6 +14,7 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { User } from '../users/entities/user.entity';
 import { Participation } from './entities/participation.entity';
 import { EventStatus } from './enums/event-status.enum';
+import { FindEventsDto } from './dto/find-events.dto';
 
 @Injectable()
 export class EventsService {
@@ -152,5 +155,71 @@ export class EventsService {
       where: { event: { id: eventId } },
       relations: ['user'],
     });
+  }
+
+  async findEvents(filters: FindEventsDto): Promise<Event[]> {
+    try {
+      const queryBuilder = this.eventsRepository
+        .createQueryBuilder('event')
+        .leftJoinAndSelect('event.organizer', 'organizer');
+
+      if (filters?.search) {
+        queryBuilder.where(
+          'event.title ILIKE :search OR event.description ILIKE :search',
+          { search: `%${filters.search}%` },
+        );
+      }
+
+      if (filters?.location) {
+        const whereClause = filters.search ? 'andWhere' : 'where';
+        queryBuilder[whereClause]('event.location ILIKE :location', {
+          location: `%${filters.location}%`,
+        });
+      }
+
+      if (filters?.status) {
+        const whereClause =
+          filters.search || filters.location ? 'andWhere' : 'where';
+        queryBuilder[whereClause]('event.status = :status', {
+          status: filters.status,
+        });
+      }
+
+      if (filters?.dateFrom) {
+        if (isNaN(Date.parse(filters.dateFrom))) {
+          throw new BadRequestException('Invalid dateFrom format');
+        }
+        const whereClause =
+          filters.search || filters.location || filters.status
+            ? 'andWhere'
+            : 'where';
+        queryBuilder[whereClause]('event.date >= :dateFrom', {
+          dateFrom: new Date(filters.dateFrom),
+        });
+      }
+
+      if (filters?.dateTo) {
+        if (isNaN(Date.parse(filters.dateTo))) {
+          throw new BadRequestException('Invalid dateTo format');
+        }
+        const whereClause =
+          filters.search ||
+          filters.location ||
+          filters.status ||
+          filters.dateFrom
+            ? 'andWhere'
+            : 'where';
+        queryBuilder[whereClause]('event.date <= :dateTo', {
+          dateTo: new Date(filters.dateTo),
+        });
+      }
+
+      return await queryBuilder.getMany();
+    } catch (error) {
+      console.error('Error in findEvents:', error);
+      throw new InternalServerErrorException(
+        'An error occurred while searching events',
+      );
+    }
   }
 }

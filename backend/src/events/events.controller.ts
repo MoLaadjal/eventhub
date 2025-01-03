@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
@@ -20,6 +21,7 @@ import { Role } from 'src/auth/enums/role.enum';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventStatus } from './enums/event-status.enum';
+import { FindEventsDto } from './dto/find-events.dto';
 
 @Controller('events')
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
@@ -37,6 +39,12 @@ export class EventsController {
   @RequirePermissions(Permission.READ_EVENTS)
   findAll() {
     return this.eventsService.findAll();
+  }
+
+  @Get('search')
+  @RequirePermissions(Permission.READ_EVENTS)
+  async searchEvents(@Query() filters: FindEventsDto) {
+    return this.eventsService.findEvents(filters);
   }
 
   @Get(':id')
