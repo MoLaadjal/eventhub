@@ -7,6 +7,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { EventStatus } from '../enums/event-status.enum';
 
 @Entity('events')
 export class Event {
@@ -31,8 +32,12 @@ export class Event {
   @Column({ default: 0 })
   currentParticipants: number;
 
-  @Column({ default: 'draft' })
-  status: 'draft' | 'published' | 'cancelled' | 'completed';
+  @Column({
+    type: 'enum',
+    enum: EventStatus,
+    default: EventStatus.DRAFT,
+  })
+  status: EventStatus;
 
   @ManyToOne(() => User)
   organizer: User;

@@ -4,8 +4,6 @@ import {
   IsInt,
   Min,
   IsDateString,
-  IsOptional,
-  IsEnum,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 
@@ -32,7 +30,7 @@ export class CreateEventDto {
   @Min(1)
   maxParticipants: number;
 
-  @IsOptional()
-  @IsEnum(['draft', 'published', 'cancelled', 'completed'])
-  status?: 'draft' | 'published' | 'cancelled' | 'completed';
+  // @IsOptional()
+  // @IsEnum(['draft', 'published', 'cancelled', 'completed'])
+  // status?: 'draft' | 'published' | 'cancelled' | 'completed';
 }

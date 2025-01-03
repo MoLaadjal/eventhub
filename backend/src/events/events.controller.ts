@@ -19,6 +19,7 @@ import { Permission } from 'src/auth/enums/permission.enum';
 import { Role } from 'src/auth/enums/role.enum';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { EventStatus } from './enums/event-status.enum';
 
 @Controller('events')
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
@@ -49,6 +50,17 @@ export class EventsController {
   @RequirePermissions(Permission.UPDATE_EVENTS)
   update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
     return this.eventsService.update(id, updateEventDto);
+  }
+
+  @Patch(':id/status')
+  @Roles(Role.ADMIN, Role.ORGANIZER)
+  @RequirePermissions(Permission.UPDATE_EVENTS)
+  async updateStatus(
+    @Param('id') id: string,
+    @Body('status') status: EventStatus,
+    @Request() req,
+  ) {
+    return this.eventsService.updateStatus(id, status, req.user.id);
   }
 
   @Delete(':id')
